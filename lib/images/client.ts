@@ -9,8 +9,53 @@ export function checkSelectedFile(file: File): string | null {
   return null;
 }
 
+// Her yüklenen fotoğrafın sol altına hafif saydam logo eklenir.
+const WATERMARK_URL = "/marka/logo-beyaz.png";
+let watermark: Promise<ImageBitmap | null> | null = null;
+
+function loadWatermark(): Promise<ImageBitmap | null> {
+  watermark ??= fetch(WATERMARK_URL)
+    .then((res) => (res.ok ? res.blob() : Promise.reject(new Error("logo"))))
+    .then((blob) => createImageBitmap(blob))
+    .catch(() => {
+      watermark = null; // logo yüklenemezse fotoğraf logosuz yüklenir, bir sonraki denemede tekrar denenir
+      return null;
+    });
+  return watermark;
+}
+
 /**
- * Fotoğrafı yüklemeden önce tarayıcıda küçültür (uzun kenar en fazla 1920 px, JPEG %85).
+ * Logoyu sol alta, yarı saydam koyu gri bir zemin üzerine çizer (açık renkli fotoğraflarda da okunur).
+ * Araç listesindeki 4:3 kırpılmış küçük görsellerde de görünsün diye fotoğrafın ortasındaki 4:3'lük alanın
+ * sol alt köşesine yerleştirilir.
+ */
+function drawWatermark(ctx: CanvasRenderingContext2D, logo: ImageBitmap, width: number, height: number) {
+  const safeW = Math.min(width, (height * 4) / 3);
+  const safeH = Math.min(height, (width * 3) / 4);
+  const left = (width - safeW) / 2;
+  const bottom = (height - safeH) / 2;
+  const logoW = Math.max(64, safeW * 0.1);
+  const logoH = (logoW * logo.height) / logo.width;
+  const pad = safeW * 0.03;
+  const boxPad = logoW * 0.12;
+  const x = left + pad + boxPad;
+  const y = height - bottom - pad - boxPad - logoH;
+  ctx.save();
+  ctx.fillStyle = "rgba(40, 42, 45, 0.45)";
+  ctx.beginPath();
+  if (typeof ctx.roundRect === "function") {
+    ctx.roundRect(x - boxPad, y - boxPad, logoW + boxPad * 2, logoH + boxPad * 2, boxPad * 0.9);
+  } else {
+    ctx.rect(x - boxPad, y - boxPad, logoW + boxPad * 2, logoH + boxPad * 2);
+  }
+  ctx.fill();
+  ctx.globalAlpha = 0.9;
+  ctx.drawImage(logo, x, y, logoW, logoH);
+  ctx.restore();
+}
+
+/**
+ * Fotoğrafı yüklemeden önce tarayıcıda küçültür (uzun kenar en fazla 1920 px, JPEG %85) ve logoyu ekler.
  * Telefon fotoğrafları ~5–10 MB'tan ~400 KB'a iner: yükleme hızlanır, Cloudinary kotası korunur.
  */
 async function shrink(file: File): Promise<Blob> {
@@ -24,6 +69,8 @@ async function shrink(file: File): Promise<Blob> {
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const logo = await loadWatermark();
+    if (logo) drawWatermark(ctx, logo, canvas.width, canvas.height);
     const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.85));
     if (!blob) throw new Error("toBlob");
     return blob;

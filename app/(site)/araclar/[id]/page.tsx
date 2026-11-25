@@ -44,15 +44,18 @@ async function VehicleDetail({ params }: Props) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
-      <section className="page-hero">
+      <div className="detail-crumbs">
         <div className="container">
           <nav className="breadcrumb" aria-label="Sayfa yolu">
-            <Link href="/">Ana Sayfa</Link> / <Link href="/araclar">Araçlarımız</Link> / {v.make}
+            <Link href="/">Ana Sayfa</Link>
+            <span aria-hidden="true">/</span>
+            <Link href="/araclar">Araçlarımız</Link>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">{title}</span>
           </nav>
-          <h1>{title}</h1>
         </div>
-      </section>
-      <div className="page">
+      </div>
+      <div className="page page-detail">
         <div className="container">
           <div className="detail-layout">
             <div className="detail-gallery">
@@ -71,6 +74,7 @@ async function VehicleDetail({ params }: Props) {
             <aside className="detail-aside">
               <div className="panel">
                 <span className="listing-code">İLAN NO: {v.id}</span>
+                <h1 className="detail-title">{title}</h1>
                 <div className="detail-price">{formatPrice(v.price)}</div>
                 <dl className="key-specs">
                   <div><CalendarIcon /><span><dt>Yıl</dt><dd>{v.year}</dd></span></div>
