@@ -1,6 +1,6 @@
 import "server-only";
 import { createSign } from "node:crypto";
-import { sheetsConfig } from "./config";
+import { missingSheetsVars, sheetsConfig } from "./config";
 
 /**
  * Google Sheets API ile konuşan küçük istemci (ek paket gerektirmez).
@@ -57,7 +57,12 @@ async function accessToken(): Promise<string> {
 
 function requireConfig() {
   const cfg = sheetsConfig();
-  if (!cfg) throw new SheetsError("Google Sheets ayarları eksik.");
+  if (!cfg) {
+    throw new SheetsError(
+      `Google Sheets ayarları eksik: ${missingSheetsVars().join(", ")}. ` +
+        "Vercel'de Settings → Environment Variables bölümüne ekleyip yeniden yayınlayın (Redeploy).",
+    );
+  }
   return cfg;
 }
 

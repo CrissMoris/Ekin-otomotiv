@@ -7,6 +7,7 @@ import { sheetsConfig } from "@/lib/config";
 import { FUEL_LABELS, STATUS_LABELS, TRANSMISSION_LABELS } from "@/lib/constants";
 import type { SearchParams } from "@/lib/filters";
 import { formatKm, formatPrice, formatStamp } from "@/lib/format";
+import { SheetsError } from "@/lib/sheets";
 import { getAllVehicles, listInquiries } from "@/lib/store";
 
 const FLASH: Record<string, string> = {
@@ -17,7 +18,15 @@ const FLASH: Record<string, string> = {
 
 async function Dashboard({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const sp = await searchParams;
-  const [{ vehicles, issues }, inquiries] = await Promise.all([getAllVehicles(), listInquiries()]);
+  let data: [Awaited<ReturnType<typeof getAllVehicles>>, Awaited<ReturnType<typeof listInquiries>>];
+  try {
+    data = await Promise.all([getAllVehicles(), listInquiries()]);
+  } catch (error) {
+    // Yalnızca giriş yapmış yöneticiye, sorunun nedeni açıkça gösterilir (değişken adları; değerler asla).
+    if (error instanceof SheetsError) return <ConnectionProblem message={error.message} />;
+    throw error;
+  }
+  const [{ vehicles, issues }, inquiries] = data;
   const published = vehicles.filter((v) => v.status === "yayinda").length;
   const flash = FLASH[String(sp.durum ?? "")];
   const sheetId = sheetsConfig()?.sheetId;
@@ -105,6 +114,19 @@ async function Dashboard({ searchParams }: { searchParams: Promise<SearchParams>
         </div>
       )}
     </>
+  );
+}
+
+function ConnectionProblem({ message }: { message: string }) {
+  return (
+    <div className="panel" style={{ maxWidth: 720 }}>
+      <h1 style={{ fontSize: "1.3rem" }}>Google Sheets bağlantısı kurulamadı</h1>
+      <div className="alert alert-error" role="alert" style={{ margin: "12px 0" }}>{message}</div>
+      <p className="muted">
+        Vercel&apos;de bir ayarı değiştirdikten sonra Deployments sayfasından son yayını seçip <strong>Redeploy</strong>{" "}
+        yapın; yeni ayarlar ancak yeniden yayınlandığında geçerli olur.
+      </p>
+    </div>
   );
 }
 
