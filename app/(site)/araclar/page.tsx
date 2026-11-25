@@ -48,7 +48,7 @@ export default function CatalogPage({ searchParams }: { searchParams: Promise<Se
       <section className="page-hero">
         <div className="container">
           <h1>Araçlarımız</h1>
-          <p>Satıştaki tüm araçlarımız. Fotoğraflara hızlıca göz atmak için “Önizle”yi kullanabilirsiniz.</p>
+          <p>Satıştaki ikinci el araçlarımızı keşfedin, aradığınız araç için bizimle iletişime geçin.</p>
         </div>
       </section>
       <div className="page">
