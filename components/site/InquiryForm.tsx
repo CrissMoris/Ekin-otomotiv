@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { CONTACT, INQUIRY_TYPES, INQUIRY_TYPE_LABELS } from "@/lib/constants";
-import { callApi, GENERIC_ERROR_MESSAGE, NETWORK_ERROR_MESSAGE, randomKey } from "@/lib/client-utils";
+import { CONTACT, INQUIRY_TYPES } from "@/lib/constants";
+import { callApi, randomKey } from "@/lib/client-utils";
+import { lp, t, type Lang } from "@/lib/i18n";
 import type { InquiryType } from "@/lib/types";
 import { validateInquiry, withoutError, type FieldErrors } from "@/lib/validation";
 
@@ -14,6 +15,7 @@ interface Props {
   /** Formda gösterilecek talep türleri (sayfaya göre değişir). */
   types?: InquiryType[];
   messagePlaceholder?: string;
+  lang?: Lang;
 }
 
 const EMPTY = { fullName: "", phone: "", email: "", message: "" };
@@ -25,7 +27,16 @@ function onlyDigits(value: string): string {
   return digits.slice(0, 11);
 }
 
-export function InquiryForm({ vehicleId, vehicleLabel, defaultType = "satin-alma", types = INQUIRY_TYPES, messagePlaceholder }: Props) {
+export function InquiryForm({
+  vehicleId,
+  vehicleLabel,
+  defaultType = "satin-alma",
+  types = INQUIRY_TYPES,
+  messagePlaceholder,
+  lang = "tr",
+}: Props) {
+  const d = t(lang);
+  const f = d.inquiry;
   const [values, setValues] = useState({ ...EMPTY, type: defaultType as InquiryType });
   const [website, setWebsite] = useState(""); // bot tuzağı: gerçek kullanıcılar görmez
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -50,7 +61,7 @@ export function InquiryForm({ vehicleId, vehicleLabel, defaultType = "satin-alma
     e.preventDefault();
     if (status === "sending") return;
 
-    const check = validateInquiry({ ...values, vehicleId });
+    const check = validateInquiry({ ...values, vehicleId }, lang);
     if (!check.ok) {
       setErrors(check.errors);
       setStatus("idle");
@@ -66,7 +77,7 @@ export function InquiryForm({ vehicleId, vehicleLabel, defaultType = "satin-alma
 
     const res = await callApi<{ inquiryId: string }>("/api/talep", {
       method: "POST",
-      json: { ...values, vehicleId: vehicleId ?? null, website, startedAt: startedAt.current, submissionKey: submissionKey.current },
+      json: { ...values, vehicleId: vehicleId ?? null, website, startedAt: startedAt.current, submissionKey: submissionKey.current, lang },
     });
 
     if (res.ok && res.data) {
@@ -78,8 +89,8 @@ export function InquiryForm({ vehicleId, vehicleLabel, defaultType = "satin-alma
     }
 
     setStatus("error");
-    if (res.networkError) setServerMessage(NETWORK_ERROR_MESSAGE);
-    else setServerMessage(res.data?.message ?? GENERIC_ERROR_MESSAGE);
+    if (res.networkError) setServerMessage(f.networkError);
+    else setServerMessage(res.data?.message ?? f.genericError);
     if (res.data?.fieldErrors) setErrors(res.data.fieldErrors);
   }
 
@@ -87,9 +98,9 @@ export function InquiryForm({ vehicleId, vehicleLabel, defaultType = "satin-alma
     return (
       <div className="alert alert-success" role="status">
         <p>
-          <strong>Talebiniz alındı.</strong> Ekibimiz en kısa sürede sizinle iletişime geçecek.
+          <strong>{f.successTitle}</strong> {f.successText}
         </p>
-        <p>Talep numaranız: <strong>{result.id}</strong></p>
+        <p>{f.requestNo} <strong dir="ltr">{result.id}</strong></p>
         <button
           type="button"
           className="link-button"
@@ -99,7 +110,7 @@ export function InquiryForm({ vehicleId, vehicleLabel, defaultType = "satin-alma
             startedAt.current = Date.now();
           }}
         >
-          Yeni bir talep oluştur
+          {f.newRequest}
         </button>
       </div>
     );
@@ -109,15 +120,15 @@ export function InquiryForm({ vehicleId, vehicleLabel, defaultType = "satin-alma
   const idp = vehicleId ? `t-${vehicleId}` : "t-genel";
 
   return (
-    <form ref={formRef} onSubmit={onSubmit} noValidate className="form-grid" aria-label="Talep formu">
+    <form ref={formRef} onSubmit={onSubmit} noValidate className="form-grid" aria-label={f.formAria}>
       {vehicleLabel && (
         <p className="muted" style={{ margin: 0, fontSize: "0.9rem" }}>
-          İlgilendiğiniz araç: <strong>{vehicleLabel}</strong> <span className="listing-code">({vehicleId})</span>
+          {f.vehicleOfInterest} <strong dir="auto">{vehicleLabel}</strong> <span className="listing-code" dir="ltr">({vehicleId})</span>
         </p>
       )}
 
       <fieldset className="field" style={{ border: 0, padding: 0, margin: 0 }}>
-        <legend className="field-label" style={{ marginBottom: 6 }}>Talep türü</legend>
+        <legend className="field-label" style={{ marginBottom: 6 }}>{f.type}</legend>
         <div className="radio-group">
           {types.map((t) => (
             <label key={t} className="radio-pill">
@@ -128,7 +139,7 @@ export function InquiryForm({ vehicleId, vehicleLabel, defaultType = "satin-alma
                 checked={values.type === t}
                 onChange={() => setValues((v) => ({ ...v, type: t }))}
               />
-              <span>{INQUIRY_TYPE_LABELS[t]}</span>
+              <span>{d.inquiryTypes[t]}</span>
             </label>
           ))}
         </div>
@@ -136,7 +147,7 @@ export function InquiryForm({ vehicleId, vehicleLabel, defaultType = "satin-alma
       </fieldset>
 
       <div className={fieldClass("fullName")}>
-        <label htmlFor={`${idp}-ad`}>Ad soyad</label>
+        <label htmlFor={`${idp}-ad`}>{f.fullName}</label>
         <input
           id={`${idp}-ad`}
           name="fullName"
@@ -151,7 +162,7 @@ export function InquiryForm({ vehicleId, vehicleLabel, defaultType = "satin-alma
       </div>
 
       <div className={fieldClass("phone")}>
-        <label htmlFor={`${idp}-tel`}>Telefon</label>
+        <label htmlFor={`${idp}-tel`}>{f.phone}</label>
         <input
           id={`${idp}-tel`}
           name="phone"
@@ -161,6 +172,7 @@ export function InquiryForm({ vehicleId, vehicleLabel, defaultType = "satin-alma
           inputMode="numeric"
           pattern="[0-9]*"
           placeholder="05XXXXXXXXX"
+          dir="ltr"
           value={values.phone}
           onChange={update("phone")}
           aria-invalid={Boolean(errors.phone)}
@@ -170,7 +182,7 @@ export function InquiryForm({ vehicleId, vehicleLabel, defaultType = "satin-alma
 
       <div className={fieldClass("email")}>
         <label htmlFor={`${idp}-eposta`}>
-          E-posta <span className="optional">(isteğe bağlı)</span>
+          {f.email} <span className="optional">{f.optional}</span>
         </label>
         <input
           id={`${idp}-eposta`}
@@ -178,6 +190,7 @@ export function InquiryForm({ vehicleId, vehicleLabel, defaultType = "satin-alma
           type="email"
           className="input"
           autoComplete="email"
+          dir="ltr"
           value={values.email}
           onChange={update("email")}
           aria-invalid={Boolean(errors.email)}
@@ -188,13 +201,13 @@ export function InquiryForm({ vehicleId, vehicleLabel, defaultType = "satin-alma
 
       <div className={fieldClass("message")}>
         <label htmlFor={`${idp}-mesaj`}>
-          Mesajınız <span className="optional">(isteğe bağlı)</span>
+          {f.message} <span className="optional">{f.optional}</span>
         </label>
         <textarea
           id={`${idp}-mesaj`}
           name="message"
           className="textarea"
-          placeholder={messagePlaceholder ?? "Sormak istediğiniz bir şey varsa yazabilirsiniz."}
+          placeholder={messagePlaceholder ?? f.messagePlaceholder}
           value={values.message}
           onChange={update("message")}
           maxLength={1000}
@@ -218,18 +231,19 @@ export function InquiryForm({ vehicleId, vehicleLabel, defaultType = "satin-alma
         <div className="alert alert-error" role="alert">
           <p>{serverMessage}</p>
           <p style={{ fontSize: "0.85rem" }}>
-            Sorun devam ederse bizi arayabilirsiniz: <a href={CONTACT.phoneHref}>{CONTACT.phone}</a>
+            {f.errorCall} <a href={CONTACT.phoneHref} dir="ltr">{CONTACT.phone}</a>
           </p>
         </div>
       )}
 
       <button type="submit" className="btn btn-red btn-block" disabled={status === "sending"}>
-        {status === "sending" ? "Gönderiliyor…" : "Talebi Gönder"}
+        {status === "sending" ? f.sending : f.submit}
       </button>
 
       <p className="privacy-note">
-        Bilgileriniz yalnızca talebinize dönüş yapmak amacıyla kullanılır. Ayrıntılar için{" "}
-        <Link href="/kvkk">KVKK Aydınlatma Metni</Link>&apos;ni inceleyebilirsiniz.
+        {f.privacyA}
+        <Link href={lp(lang, "/kvkk")}>{f.privacyLink}</Link>
+        {f.privacyB}
       </p>
     </form>
   );

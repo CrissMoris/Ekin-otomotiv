@@ -11,7 +11,7 @@ import { getAdminPin, getSessionSecret } from "./config";
  */
 
 export const SESSION_COOKIE = "ekin_admin";
-export const SESSION_HOURS = 8;
+const SESSION_HOURS = 8;
 
 function sign(payload: string, secret: string): string {
   return createHmac("sha256", secret).update(payload).digest("base64url");

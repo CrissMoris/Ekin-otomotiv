@@ -6,7 +6,7 @@ import { MAX_PHOTOS_PER_VEHICLE } from "@/lib/constants";
 import { checkSelectedFile } from "@/lib/images/client";
 
 /**
- * Formdaki bir fotoğraf. `id` doluysa fotoğraf yüklenmiştir (Sheets'e yazılacak değer);
+ * Formdaki bir fotoğraf. `id` doluysa fotoğraf yüklenmiştir (veritabanına yazılacak değer);
  * boşsa bilgisayardan yeni seçilmiştir ve "Kaydet"e basınca yüklenecektir.
  */
 export interface PhotoItem {

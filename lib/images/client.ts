@@ -81,7 +81,7 @@ async function shrink(file: File): Promise<Blob> {
 
 type UploadResult = { ok: true; id: string } | { ok: false; message: string };
 
-/** Fotoğrafı yükler ve Sheets'e yazılacak kimliğini döner. */
+/** Fotoğrafı yükler ve veritabanına yazılacak kimliğini döner. */
 export async function uploadPhoto(file: File): Promise<UploadResult> {
   let blob: Blob;
   try {

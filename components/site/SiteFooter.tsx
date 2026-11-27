@@ -1,41 +1,44 @@
 import Link from "next/link";
-import { CONTACT, SAHIBINDEN_URL } from "@/lib/constants";
+import { InstagramMark } from "@/components/Icons";
+import { CONTACT, INSTAGRAM_HANDLE, INSTAGRAM_URL, SAHIBINDEN_URL } from "@/lib/constants";
+import { lp, t, type Lang } from "@/lib/i18n";
 import { Logo } from "./Logo";
 
-export function SiteFooter() {
+export function SiteFooter({ lang }: { lang: Lang }) {
+  const d = t(lang);
   return (
     <footer className="site-footer">
       <div className="container">
         <div className="footer-grid">
           <div>
-            <Logo variant="white" className="footer-logo" />
-            <p>
-              İkinci el araç satışı, hasarlı ve hasarsız araç alımı ile takas işlemlerinde şeffaf ve güvenilir
-              hizmet.
-            </p>
+            <Logo variant="white" className="footer-logo" lang={lang} />
+            <p>{d.footer.about}</p>
           </div>
           <div>
-            <h3>Kurumsal</h3>
+            <h3>{d.footer.corporate}</h3>
             <ul>
-              <li><Link href="/araclar">Araçlarımız</Link></li>
-              <li><Link href="/takas">Takas İşlemleri</Link></li>
-              <li><Link href="/iletisim">İletişim</Link></li>
-              <li><a href={SAHIBINDEN_URL} target="_blank" rel="noopener noreferrer">sahibinden.com Mağazamız</a></li>
+              <li><Link href={lp(lang, "/araclar")}>{d.nav.vehicles}</Link></li>
+              <li><Link href={lp(lang, "/takas")}>{d.nav.trade}</Link></li>
+              <li><Link href={lp(lang, "/iletisim")}>{d.nav.contact}</Link></li>
+              <li><a href={SAHIBINDEN_URL} target="_blank" rel="noopener noreferrer">{d.footer.sahibindenStore}</a></li>
             </ul>
           </div>
           <div>
-            <h3>İletişim</h3>
+            <h3>{d.footer.contact}</h3>
             <ul>
-              <li><a href={CONTACT.phoneHref}>{CONTACT.phone}</a></li>
+              <li><a href={CONTACT.phoneHref} dir="ltr">{CONTACT.phone}</a></li>
               {CONTACT.email && <li><a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a></li>}
               <li>{CONTACT.address}</li>
-              <li>{CONTACT.hours}</li>
+              <li>{d.hours}</li>
             </ul>
+            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="footer-social" aria-label={`Instagram ${INSTAGRAM_HANDLE}`} title="Instagram">
+              <InstagramMark />
+            </a>
           </div>
         </div>
         <div className="footer-bottom">
-          <span>© Ekin Otomotiv. Tüm hakları saklıdır.</span>
-          <Link href="/kvkk">KVKK Aydınlatma Metni</Link>
+          <span>{d.footer.rights}</span>
+          <Link href={lp(lang, "/kvkk")}>{d.footer.kvkk}</Link>
         </div>
       </div>
     </footer>

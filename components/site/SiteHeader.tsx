@@ -5,22 +5,25 @@ import { usePathname } from "next/navigation";
 import { Suspense, useState } from "react";
 import { ClockIcon, CloseIcon, ExternalIcon, MenuIcon, PhoneIcon } from "@/components/Icons";
 import { CONTACT, SAHIBINDEN_URL } from "@/lib/constants";
+import { LANG_INFO, lp, switchPath, t, type Lang } from "@/lib/i18n";
+import { LanguageMenu } from "./LanguageMenu";
 import { Logo } from "./Logo";
 
-const NAV = [
-  { href: "/", label: "Ana Sayfa" },
-  { href: "/araclar", label: "Araçlarımız" },
-  { href: "/takas", label: "Takas İşlemleri" },
-  { href: "/iletisim", label: "İletişim" },
-];
-
-function NavList({ pathname, onNavigate }: { pathname: string | null; onNavigate: () => void }) {
-  const isActive = (href: string) => pathname !== null && (href === "/" ? pathname === "/" : pathname.startsWith(href));
+function NavList({ lang, pathname, onNavigate }: { lang: Lang; pathname: string | null; onNavigate: () => void }) {
+  const d = t(lang).nav;
+  const items = [
+    { path: "/", label: d.home },
+    { path: "/araclar", label: d.vehicles },
+    { path: "/takas", label: d.trade },
+    { path: "/iletisim", label: d.contact },
+  ];
+  const base = pathname === null ? null : switchPath(pathname, "tr");
+  const isActive = (path: string) => base !== null && (path === "/" ? base === "/" : base.startsWith(path));
   return (
     <ul>
-      {NAV.map((item) => (
-        <li key={item.href}>
-          <Link href={item.href} aria-current={isActive(item.href) ? "page" : undefined} onClick={onNavigate}>
+      {items.map((item) => (
+        <li key={item.path}>
+          <Link href={lp(lang, item.path)} aria-current={isActive(item.path) ? "page" : undefined} onClick={onNavigate}>
             {item.label}
           </Link>
         </li>
@@ -30,48 +33,54 @@ function NavList({ pathname, onNavigate }: { pathname: string | null; onNavigate
 }
 
 // Etkin sayfa bilgisi istek anında belli olduğu için ayrı bileşende okunur.
-function ActiveNavList({ onNavigate }: { onNavigate: () => void }) {
-  return <NavList pathname={usePathname()} onNavigate={onNavigate} />;
+function ActiveNavList({ lang, onNavigate }: { lang: Lang; onNavigate: () => void }) {
+  return <NavList lang={lang} pathname={usePathname()} onNavigate={onNavigate} />;
 }
 
-export function SiteHeader() {
+export function SiteHeader({ lang }: { lang: Lang }) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
+  const d = t(lang);
 
   return (
-    <>
+    <div className="site-top">
       <div className="topbar">
         <div className="container">
           <div className="topbar-group">
             <a href={CONTACT.phoneHref}>
-              <PhoneIcon /> {CONTACT.phone}
+              <PhoneIcon /> <span dir="ltr">{CONTACT.phone}</span>
             </a>
             <span className="hide-sm">
-              <ClockIcon /> {CONTACT.hours}
+              <ClockIcon /> {d.hours}
             </span>
           </div>
-          <a href={SAHIBINDEN_URL} target="_blank" rel="noopener noreferrer">
-            sahibinden.com<span className="hide-xs">&nbsp;mağazamız</span> <ExternalIcon />
-          </a>
+          <div className="topbar-group">
+            <a href={SAHIBINDEN_URL} target="_blank" rel="noopener noreferrer" className="topbar-sahibinden">
+              sahibinden.com<span className="hide-xs">&nbsp;{d.header.sahibindenStore}</span> <ExternalIcon />
+            </a>
+            <Suspense fallback={<span className="lang-toggle-placeholder">{LANG_INFO[lang].short}</span>}>
+              <LanguageMenu lang={lang} />
+            </Suspense>
+          </div>
         </div>
       </div>
       <header className="site-header">
         <div className="container">
-          <Logo />
-          <nav className={`main-nav${open ? " open" : ""}`} aria-label="Ana menü">
-            <Suspense fallback={<NavList pathname={null} onNavigate={close} />}>
-              <ActiveNavList onNavigate={close} />
+          <Logo lang={lang} />
+          <nav className={`main-nav${open ? " open" : ""}`} aria-label={d.header.mainMenu}>
+            <Suspense fallback={<NavList lang={lang} pathname={null} onNavigate={close} />}>
+              <ActiveNavList lang={lang} onNavigate={close} />
             </Suspense>
           </nav>
           <div className="header-actions">
-            <Link href="/takas" className="btn btn-red">
-              Teklif Al
+            <Link href={lp(lang, "/takas")} className="btn btn-red">
+              {d.header.getOffer}
             </Link>
             <button
               type="button"
               className="menu-toggle"
               aria-expanded={open}
-              aria-label={open ? "Menüyü kapat" : "Menüyü aç"}
+              aria-label={open ? d.header.menuClose : d.header.menuOpen}
               onClick={() => setOpen((v) => !v)}
             >
               {open ? <CloseIcon /> : <MenuIcon />}
@@ -79,6 +88,6 @@ export function SiteHeader() {
           </div>
         </div>
       </header>
-    </>
+    </div>
   );
 }

@@ -9,6 +9,18 @@ import { formatNumber, formatPrice, parseInteger } from "@/lib/format";
 import { uploadPhoto } from "@/lib/images/client";
 import type { FuelType, Transmission, Vehicle, VehicleStatus } from "@/lib/types";
 import { validateVehicle, withoutError, type FieldErrors } from "@/lib/validation";
+import {
+  BODY_TYPE_LABELS,
+  BODY_TYPES,
+  COLOR_LABELS,
+  DRIVETRAIN_LABELS,
+  DRIVETRAINS,
+  HEAVY_DAMAGE_LABELS,
+  TRADE_LABELS,
+  type Inspection,
+} from "@/lib/vehicle-specs";
+import { FeaturePicker } from "./FeaturePicker";
+import { InspectionEditor } from "./InspectionEditor";
 import { PhotoManager, type PhotoItem } from "./PhotoManager";
 
 const COMMON_MAKES = [
@@ -28,6 +40,16 @@ interface FormValues {
   description: string;
   sahibindenUrl: string;
   status: VehicleStatus;
+  bodyType: string;
+  color: string;
+  engineCc: string;
+  enginePower: string;
+  drivetrain: string;
+  trade: string;
+  heavyDamage: string;
+  tramer: string;
+  inspection: Inspection;
+  features: string[];
 }
 
 function initialValues(v?: Vehicle): FormValues {
@@ -42,6 +64,16 @@ function initialValues(v?: Vehicle): FormValues {
     description: v?.description ?? "",
     sahibindenUrl: v?.sahibindenUrl ?? "",
     status: v?.status ?? "taslak",
+    bodyType: v?.bodyType ?? "",
+    color: v?.color ?? "",
+    engineCc: v?.engineCc != null ? String(v.engineCc) : "",
+    enginePower: v?.enginePower != null ? String(v.enginePower) : "",
+    drivetrain: v?.drivetrain ?? "",
+    trade: v?.trade ?? "",
+    heavyDamage: v?.heavyDamage ?? "",
+    tramer: v?.tramer != null ? formatNumber(v.tramer) : "",
+    inspection: v?.inspection ?? {},
+    features: v?.features ?? [],
   };
 }
 
@@ -219,7 +251,7 @@ export function VehicleForm({ vehicle }: { vehicle?: Vehicle }) {
               name="description"
               className="textarea"
               rows={6}
-              placeholder="Aracın durumu, bakım geçmişi, boya/değişen bilgisi, donanımlar…"
+              placeholder="Aracın durumu, bakım geçmişi ve diğer notlar…"
               value={values.description}
               onChange={set("description")}
               maxLength={3000}
@@ -245,6 +277,100 @@ export function VehicleForm({ vehicle }: { vehicle?: Vehicle }) {
             {err("sahibindenUrl")}
           </div>
         </div>
+      </section>
+
+      <section className="form-section">
+        <h2>
+          Ek bilgiler <span className="optional">(isteğe bağlı)</span>
+        </h2>
+        <div className="form-grid two">
+          <div className={fieldClass("bodyType")}>
+            <label htmlFor="v-body">Kasa tipi</label>
+            <select id="v-body" name="bodyType" className="select" value={values.bodyType} onChange={set("bodyType")}>
+              <option value="">Belirtilmemiş</option>
+              {BODY_TYPES.map((b) => (
+                <option key={b} value={b}>{BODY_TYPE_LABELS[b].tr}</option>
+              ))}
+            </select>
+            {err("bodyType")}
+          </div>
+          <div className={fieldClass("color")}>
+            <label htmlFor="v-color">Renk</label>
+            <input id="v-color" name="color" className="input" list="renk-listesi" placeholder="örn. Beyaz" value={values.color} onChange={set("color")} maxLength={30} />
+            <datalist id="renk-listesi">
+              {Object.keys(COLOR_LABELS).map((c) => (
+                <option key={c} value={c} />
+              ))}
+            </datalist>
+            {err("color")}
+          </div>
+          <div className={fieldClass("engineCc")}>
+            <label htmlFor="v-cc">Motor hacmi (cc)</label>
+            <input id="v-cc" name="engineCc" className="input" inputMode="numeric" placeholder="örn. 1598" value={values.engineCc} onChange={set("engineCc")} maxLength={5} />
+            {err("engineCc")}
+          </div>
+          <div className={fieldClass("enginePower")}>
+            <label htmlFor="v-hp">Motor gücü (hp)</label>
+            <input id="v-hp" name="enginePower" className="input" inputMode="numeric" placeholder="örn. 120" value={values.enginePower} onChange={set("enginePower")} maxLength={4} />
+            {err("enginePower")}
+          </div>
+          <div className={fieldClass("drivetrain")}>
+            <label htmlFor="v-drive">Çekiş</label>
+            <select id="v-drive" name="drivetrain" className="select" value={values.drivetrain} onChange={set("drivetrain")}>
+              <option value="">Belirtilmemiş</option>
+              {DRIVETRAINS.map((d) => (
+                <option key={d} value={d}>{DRIVETRAIN_LABELS[d].tr}</option>
+              ))}
+            </select>
+            {err("drivetrain")}
+          </div>
+          <div className={fieldClass("trade")}>
+            <label htmlFor="v-trade">Takas</label>
+            <select id="v-trade" name="trade" className="select" value={values.trade} onChange={set("trade")}>
+              <option value="">Belirtilmemiş</option>
+              {(Object.keys(TRADE_LABELS) as (keyof typeof TRADE_LABELS)[]).map((k) => (
+                <option key={k} value={k}>{TRADE_LABELS[k].tr}</option>
+              ))}
+            </select>
+            {err("trade")}
+          </div>
+        </div>
+      </section>
+
+      <section className="form-section">
+        <h2>
+          Ekspertiz <span className="optional">(boya / değişen, isteğe bağlı)</span>
+        </h2>
+        <div className="form-grid two" style={{ marginBottom: 18 }}>
+          <div className={fieldClass("heavyDamage")}>
+            <label htmlFor="v-heavy">Ağır hasar kaydı</label>
+            <select id="v-heavy" name="heavyDamage" className="select" value={values.heavyDamage} onChange={set("heavyDamage")}>
+              <option value="">Belirtilmemiş</option>
+              {(Object.keys(HEAVY_DAMAGE_LABELS) as (keyof typeof HEAVY_DAMAGE_LABELS)[]).map((k) => (
+                <option key={k} value={k}>{HEAVY_DAMAGE_LABELS[k].tr}</option>
+              ))}
+            </select>
+            {err("heavyDamage")}
+          </div>
+          <div className={fieldClass("tramer")}>
+            <label htmlFor="v-tramer">Tramer kaydı (₺)</label>
+            <input id="v-tramer" name="tramer" className="input" inputMode="numeric" placeholder="Kayıt yoksa 0 yazın" value={values.tramer} onChange={set("tramer")} maxLength={13} />
+            {err("tramer")}
+          </div>
+        </div>
+        <InspectionEditor
+          value={values.inspection}
+          onChange={(inspection) => setValues((v) => ({ ...v, inspection }))}
+        />
+        {err("inspection")}
+      </section>
+
+      <section className="form-section">
+        <h2>
+          Donanım özellikleri <span className="optional">(isteğe bağlı)</span>
+        </h2>
+        <FeaturePicker value={values.features} onChange={(features) => setValues((v) => ({ ...v, features }))} />
+        {err("features")}
       </section>
 
       <section className="form-section">

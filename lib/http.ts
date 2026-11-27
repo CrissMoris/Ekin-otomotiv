@@ -2,7 +2,7 @@ import "server-only";
 import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE, verifySessionToken } from "./auth";
 import { checkLimit, LIMITS, tooManyRequests } from "./rate-limit";
-import { SheetsError } from "./sheets";
+import { DataSourceError } from "./data-error";
 import { StoreError } from "./store";
 import type { FieldErrors } from "./validation";
 
@@ -41,7 +41,7 @@ export function requireAdmin(request: NextRequest): NextResponse | null {
 /** Veri katmanı hatalarını Türkçe, kullanıcıya gösterilebilir yanıtlara çevirir. */
 export function dataErrorResponse(error: unknown): NextResponse {
   if (error instanceof StoreError) return jsonError(error.status, error.message);
-  if (error instanceof SheetsError) return jsonError(503, error.message);
+  if (error instanceof DataSourceError) return jsonError(503, error.message);
   console.error("Beklenmeyen veri hatası:", error);
   return jsonError(500, "İşlem tamamlanamadı. Beklenmeyen bir hata oluştu; lütfen tekrar deneyin.");
 }

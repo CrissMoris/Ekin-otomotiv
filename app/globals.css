@@ -92,16 +92,14 @@ a {
 .panel p a,
 .panel li a,
 .privacy-note a,
-.alert a,
-.text-link {
+.alert a {
   color: var(--red);
   font-weight: 600;
 }
 .panel p a:hover,
 .panel li a:hover,
 .privacy-note a:hover,
-.alert a:hover,
-.text-link:hover {
+.alert a:hover {
   color: var(--red-dark);
 }
 body:has(dialog[open]) {
@@ -255,6 +253,8 @@ p {
 
 /* ---------- Üst bilgi ---------- */
 .topbar {
+  position: relative;
+  z-index: 70;
   background: var(--black);
   color: #c9cacc;
   font-size: 0.82rem;
@@ -288,11 +288,19 @@ p {
   color: var(--red);
 }
 
+/* Üst şerit + menü birlikte sayfanın üstünde sabit kalır */
+.site-top {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+}
+html {
+  scroll-padding-top: 130px;
+}
 .site-header {
   background: #fff;
   border-bottom: 1px solid var(--gray-200);
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 50;
 }
 .site-header .container {
@@ -380,6 +388,9 @@ p {
   }
   .logo img {
     height: 44px;
+  }
+  .site-header .container {
+    min-height: 66px;
   }
 }
 @media (max-width: 640px) {
@@ -615,11 +626,6 @@ main {
   margin: 0;
   color: rgba(255, 255, 255, 0.85);
 }
-.band-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
 
 /* ---------- Araç kartları ---------- */
 .vehicle-grid {
@@ -835,7 +841,7 @@ main {
   border-radius: var(--radius);
   padding: 20px;
   position: sticky;
-  top: 100px;
+  top: 136px;
   background: #fff;
 }
 .filters summary {
@@ -1048,8 +1054,6 @@ main {
 .detail-aside {
   grid-area: aside;
   min-width: 0;
-  position: sticky;
-  top: 100px;
   display: grid;
   gap: 16px;
 }
@@ -1072,42 +1076,6 @@ main {
   line-height: 1.25;
   margin: 6px 0 4px;
   overflow-wrap: anywhere;
-}
-.detail-price {
-  font-family: var(--font-head);
-  font-size: 2.1rem;
-  font-weight: 800;
-  color: var(--red);
-  margin: 6px 0 18px;
-  line-height: 1.1;
-}
-.key-specs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin: 0 0 20px;
-}
-.key-specs div {
-  background: var(--gray-100);
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.key-specs .icon {
-  color: var(--red);
-}
-.key-specs dt {
-  font-size: 0.72rem;
-  color: var(--gray-600);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.key-specs dd {
-  margin: 0;
-  font-weight: 700;
-  font-size: 0.92rem;
 }
 .stack {
   display: grid;
@@ -1132,28 +1100,6 @@ main {
   width: 17px;
   height: 17px;
   color: var(--red);
-}
-.spec-table {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  margin: 0;
-}
-.spec-table div {
-  padding: 12px 0;
-  border-bottom: 1px solid var(--gray-200);
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding-right: 20px;
-}
-.spec-table dt {
-  color: var(--gray-600);
-  font-size: 0.9rem;
-}
-.spec-table dd {
-  margin: 0;
-  font-weight: 600;
-  text-align: right;
 }
 .description {
   white-space: pre-line;
@@ -1273,17 +1219,6 @@ main {
       "aside"
       "info";
   }
-  .detail-aside {
-    position: static;
-  }
-}
-@media (max-width: 560px) {
-  .spec-table {
-    grid-template-columns: 1fr;
-  }
-  .spec-table div {
-    padding-right: 0;
-  }
 }
 
 .contact-grid {
@@ -1311,8 +1246,6 @@ main {
 }
 .contact-list .icon {
   flex-shrink: 0;
-}
-.contact-list .icon {
   width: 22px;
   height: 22px;
   color: var(--red);
@@ -1502,25 +1435,6 @@ main {
 .admin-crumb a {
   color: inherit;
   text-decoration: none;
-}
-/* Metin içindeki bağlantılar: altı çizili değil, marka kırmızısı */
-.panel p a,
-.panel li a,
-.privacy-note a,
-.alert a,
-.text-link {
-  color: var(--red);
-  font-weight: 600;
-}
-.panel p a:hover,
-.panel li a:hover,
-.privacy-note a:hover,
-.alert a:hover,
-.text-link:hover {
-  color: var(--red-dark);
-}
-body:has(dialog[open]) {
-  overflow: hidden;
 }
 .login-card {
   max-width: 420px;
@@ -1807,19 +1721,26 @@ dialog.lightbox::backdrop {
   font-size: 0.9rem;
 }
 .lightbox-close {
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: transparent;
-  color: #fff;
-  border-radius: 50%;
-  width: 42px;
-  height: 42px;
-  display: grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 6px 4px;
+  border: 0;
+  background: none;
+  color: rgba(255, 255, 255, 0.85);
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
   cursor: pointer;
 }
-.lightbox-close:hover {
-  background: var(--red);
-  border-color: var(--red);
+.lightbox-close .icon {
+  width: 20px;
+  height: 20px;
+}
+.lightbox-close:hover,
+.lightbox-close:focus-visible {
+  color: #fff;
 }
 .lightbox-stage {
   position: relative;
@@ -2048,9 +1969,6 @@ dialog.lightbox::backdrop {
   .detail-title {
     font-size: 1.35rem;
   }
-  .detail-price {
-    font-size: 1.8rem;
-  }
 }
 @media (max-width: 400px) {
   .topbar {
@@ -2068,4 +1986,659 @@ dialog.lightbox::backdrop {
     min-height: 44px;
     min-width: 44px;
   }
+}
+
+/* =====================================================================
+   Arapça (sağdan sola) düzen
+   ===================================================================== */
+@font-face {
+  font-family: "Noto Sans Arabic";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("/fonts/noto-sans-arabic-arabic-wght-normal.woff2") format("woff2");
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
+}
+.site-root {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.site-root[dir="rtl"] {
+  --font-body: "Noto Sans Arabic", "Inter", system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
+  --font-head: "Noto Sans Arabic", "Montserrat", "Inter", system-ui, sans-serif;
+  font-family: var(--font-body);
+}
+/* Arapça harfler birbirine bağlandığı için harf aralığı açılmaz */
+.site-root[dir="rtl"] * {
+  letter-spacing: 0 !important;
+}
+[dir="rtl"] .media-badge {
+  left: auto;
+  right: 12px;
+}
+[dir="rtl"] .preview-button {
+  right: auto;
+  left: 12px;
+}
+[dir="rtl"] .preview-button span {
+  border-left: 0;
+  padding-left: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.35);
+  padding-right: 6px;
+}
+[dir="rtl"] .steps li {
+  padding-left: 0;
+  padding-right: 52px;
+}
+[dir="rtl"] .steps li::before {
+  left: auto;
+  right: 0;
+}
+[dir="rtl"] .legal li {
+  padding-left: 0;
+  padding-right: 20px;
+}
+[dir="rtl"] .legal li::before {
+  left: auto;
+  right: 4px;
+}
+[dir="rtl"] .icon-dir {
+  transform: scaleX(-1);
+}
+
+/* ---------- Üst şerit: dil seçici ---------- */
+.topbar-group:last-child {
+  gap: 14px;
+}
+.lang-menu {
+  position: relative;
+}
+.lang-toggle,
+.lang-toggle-placeholder {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 28px;
+  padding: 3px 0 3px 6px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: #fff;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.topbar .lang-toggle .icon {
+  width: 14px;
+  height: 14px;
+  color: #c9cacc;
+  transition: transform 0.15s;
+}
+.lang-toggle[aria-expanded="true"] .icon {
+  transform: rotate(180deg);
+}
+.lang-toggle:hover,
+.lang-toggle:hover .icon {
+  color: #fff;
+}
+.lang-toggle {
+  min-height: 32px;
+  padding: 4px 0 4px 6px;
+}
+[dir="rtl"] .lang-toggle {
+  padding: 4px 6px 4px 0;
+}
+@media (pointer: coarse) {
+  .lang-toggle {
+    min-height: 36px;
+  }
+}
+.lang-list {
+  position: absolute;
+  inset-inline-end: 0;
+  top: calc(100% + 8px);
+  min-width: 170px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+}
+.topbar .lang-list a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 10px;
+  border-radius: 4px;
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.topbar .lang-list a:hover {
+  background: var(--gray-100);
+  color: var(--ink);
+}
+.topbar .lang-list a[aria-current] {
+  font-weight: 700;
+}
+.topbar .lang-list span {
+  color: inherit;
+}
+.topbar .lang-list .icon {
+  width: 16px;
+  height: 16px;
+  color: var(--red);
+}
+@media (max-width: 560px) {
+  .topbar .topbar-sahibinden {
+    display: none;
+  }
+}
+.footer-social {
+  display: inline-flex;
+  align-items: center;
+  min-width: 32px;
+  min-height: 32px;
+  margin-top: 10px;
+  color: #a9abae;
+  transition: color 0.15s;
+}
+.footer-social:hover {
+  color: #fff;
+}
+.footer-social .icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* ---------- Araç detayı: ilan özeti kartı ---------- */
+.summary-card {
+  padding: 26px;
+}
+.summary-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--gray-200);
+}
+.summary-card .detail-title {
+  font-size: 1.4rem;
+  margin: 0 0 6px;
+}
+.summary-sub {
+  margin: 0;
+  color: var(--gray-600);
+  font-size: 0.92rem;
+}
+.summary-price {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  background: var(--gray-100);
+  border-radius: var(--radius-sm);
+}
+.summary-price span {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gray-600);
+}
+.summary-price strong {
+  font-family: var(--font-head);
+  font-size: 1.55rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--red);
+}
+.info-block {
+  margin-top: 22px;
+}
+.info-title {
+  font-size: 0.95rem;
+  margin: 0 0 4px;
+}
+.info-list {
+  margin: 0;
+}
+.info-list div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--gray-100);
+  font-size: 0.92rem;
+}
+.info-list div:last-child {
+  border-bottom: 0;
+}
+.info-list dt {
+  color: var(--gray-600);
+  flex: none;
+}
+.info-list dd {
+  margin: 0;
+  font-weight: 600;
+  color: var(--ink);
+  text-align: end;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.summary-card .perks {
+  margin-top: 16px;
+  padding-top: 14px;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: var(--gray-600);
+}
+.summary-card .perks .icon {
+  width: 15px;
+  height: 15px;
+}
+
+/* ---------- Ekspertiz ve donanım kartları ---------- */
+.card-head {
+  margin-bottom: 16px;
+}
+.card-head h2 {
+  margin: 0;
+}
+.card-head p {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+}
+.inspection-layout {
+  display: grid;
+  grid-template-columns: minmax(150px, 210px) minmax(0, 1fr);
+  gap: 28px;
+  align-items: center;
+}
+.inspection-diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 380px;
+}
+.diagram-letters text {
+  font-family: var(--font-head);
+  font-size: 11px;
+  font-weight: 700;
+  pointer-events: none;
+}
+.diagram-part.clickable {
+  cursor: pointer;
+}
+.diagram-part.clickable:hover {
+  filter: brightness(0.93);
+}
+.diagram-part.clickable:focus-visible {
+  outline: none;
+  stroke: var(--black);
+  stroke-width: 2.6;
+}
+.inspection-legend {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 18px;
+  font-size: 0.9rem;
+}
+.inspection-legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.swatch {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  font-family: var(--font-head);
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 1;
+}
+.legend-empty {
+  background: #fff;
+}
+.inspection-groups {
+  margin: 0;
+  display: grid;
+  border-top: 1px solid var(--gray-200);
+}
+.inspection-groups div {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--gray-200);
+}
+.inspection-groups dt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.inspection-groups dd {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  color: var(--gray-700);
+}
+.inspection-ok {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-weight: 600;
+  color: var(--success);
+}
+.inspection-note {
+  margin: 16px 0 0;
+}
+.feature-groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px 28px;
+}
+.feature-list h3 {
+  display: inline-block;
+  margin: 0 0 10px;
+  padding-bottom: 6px;
+  font-size: 0.95rem;
+  border-bottom: 2px solid var(--red);
+}
+.feature-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 7px;
+}
+.feature-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.92rem;
+  color: var(--gray-700);
+}
+.feature-list li .icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+  color: var(--success);
+}
+@media (max-width: 640px) {
+  .inspection-layout,
+  .feature-groups {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .inspection-layout .inspection-diagram {
+    max-width: 220px;
+    margin: 0 auto;
+  }
+  .summary-card {
+    padding: 20px;
+  }
+}
+
+/* ---------- Yönetim paneli: ekspertiz ve donanım seçimi ---------- */
+.inspection-editor {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+.inspection-editor-diagram .inspection-diagram {
+  max-height: 360px;
+}
+.inspection-editor-diagram .inspection-legend {
+  margin-top: 12px;
+  font-size: 0.82rem;
+}
+.inspection-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.inspection-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+.inspection-rows li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--gray-100);
+  font-size: 0.92rem;
+}
+.state-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.state-pill {
+  font: inherit;
+  font-size: 0.8rem;
+  min-height: 34px;
+  padding: 5px 10px;
+  border: 1px solid var(--gray-300);
+  border-radius: 999px;
+  background: #fff;
+  cursor: pointer;
+}
+.state-pill.active {
+  font-weight: 700;
+}
+@media (pointer: coarse) {
+  .state-pill {
+    min-height: 40px;
+  }
+}
+.feature-picker {
+  display: grid;
+  gap: 18px;
+}
+.feature-group {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+.feature-group legend {
+  padding: 0;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.check-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.check-pill {
+  position: relative;
+  display: inline-flex;
+}
+.check-pill input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.check-pill span {
+  padding: 8px 13px;
+  border: 1px solid var(--gray-300);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 0.88rem;
+}
+.check-pill.active span {
+  background: var(--black);
+  border-color: var(--black);
+  color: #fff;
+}
+.check-pill input:focus-visible + span {
+  outline: 3px solid rgba(215, 42, 38, 0.4);
+}
+@media (max-width: 760px) {
+  .inspection-editor {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .inspection-editor-diagram {
+    max-width: 260px;
+    margin: 0 auto;
+  }
+}
+
+/* ---------- Instagram glyph (resmi dosya maske olarak) ---------- */
+.brand-instagram {
+  display: inline-block;
+  flex-shrink: 0;
+  background-color: currentColor;
+  -webkit-mask: url("/marka/instagram.svg") center / contain no-repeat;
+  mask: url("/marka/instagram.svg") center / contain no-repeat;
+}
+.panel .contact-social a {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 32px;
+  color: var(--gray-700);
+  font-weight: 600;
+  text-decoration: none;
+}
+.panel .contact-social a:hover {
+  color: var(--ink);
+}
+.contact-list .contact-social .icon {
+  margin-top: 0;
+}
+
+/* ---------- Araç detayı: paylaş menüsü ---------- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.summary-head > div:first-child {
+  min-width: 0;
+}
+.share-menu {
+  position: relative;
+  flex-shrink: 0;
+}
+.share-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.share-toggle:hover,
+.share-toggle[aria-expanded="true"] {
+  border-color: var(--ink);
+}
+.share-toggle .icon {
+  width: 16px;
+  height: 16px;
+}
+.share-list {
+  position: absolute;
+  inset-inline-end: 0;
+  top: calc(100% + 6px);
+  z-index: 20;
+  min-width: 220px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+}
+.panel .share-list a,
+.share-list button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+}
+.panel .share-list a:hover,
+.share-list button:hover {
+  background: var(--gray-100);
+}
+.share-list .icon {
+  width: 18px;
+  height: 18px;
+  color: var(--gray-600);
+}
+
+/* Araçta olmayan donanımlar: tiksiz, soluk gri */
+.feature-list li.is-absent {
+  color: var(--gray-500);
+}
+.feature-gap {
+  flex: none;
+  width: 16px;
+}
+
+/* ---------- Yönetim: Sheets → MongoDB aktarımı ---------- */
+.migration-panel {
+  margin-bottom: 16px;
+}
+.migration-panel h2 {
+  font-size: 1.05rem;
+  margin: 0 0 6px;
+}
+.migration-panel .alert {
+  margin: 10px 0;
 }

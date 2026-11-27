@@ -4,14 +4,14 @@ import { cloudinaryConfig } from "./config";
 
 /**
  * Cloudinary: fotoğraflar tarayıcıdan doğrudan Cloudinary'ye yüklenir (sunucu yalnızca imza üretir),
- * Sheets'e yalnızca fotoğrafın kimliği (public_id) yazılır.
+ * Veritabanına yalnızca fotoğrafın kimliği (public_id) yazılır.
  */
 
 const API_BASE = "https://api.cloudinary.com/v1_1";
 const DELIVERY_BASE = "https://res.cloudinary.com";
 
 /** Cloudinary imza kuralı: parametreler alfabetik sıralanır, "a=1&b=2" + gizli anahtar → SHA-1. */
-export function signParams(params: Record<string, string | number>, apiSecret: string): string {
+function signParams(params: Record<string, string | number>, apiSecret: string): string {
   const toSign = Object.keys(params)
     .sort()
     .map((k) => `${k}=${params[k]}`)

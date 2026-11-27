@@ -3,7 +3,7 @@ const numberFormatter = new Intl.NumberFormat("tr-TR");
 
 export const formatPrice = (value: number) => priceFormatter.format(value);
 export const formatNumber = (value: number) => numberFormatter.format(value);
-export const formatKm = (value: number) => `${numberFormatter.format(value)} km`;
+export const formatKm = (value: number, unit = "km") => `${numberFormatter.format(value)} ${unit}`;
 
 /** İstanbul saatine göre tarih parçaları. */
 function istanbulParts(date = new Date()) {
@@ -21,7 +21,7 @@ function istanbulParts(date = new Date()) {
   return p as Record<"year" | "month" | "day" | "hour" | "minute" | "second", string>;
 }
 
-/** Sheets'e yazılan sıralanabilir zaman damgası: "2026-11-25 10:30:15" */
+/** Kayıtlarda tutulan sıralanabilir zaman damgası: "2026-11-25 10:30:15" */
 export function nowStamp(): string {
   const p = istanbulParts();
   return `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}:${p.second}`;

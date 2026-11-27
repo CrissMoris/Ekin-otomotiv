@@ -1,6 +1,7 @@
 import "server-only";
 import { createSign } from "node:crypto";
 import { missingSheetsVars, sheetsConfig } from "./config";
+import { DataSourceError } from "./data-error";
 
 /**
  * Google Sheets API ile konuşan küçük istemci (ek paket gerektirmez).
@@ -10,7 +11,7 @@ import { missingSheetsVars, sheetsConfig } from "./config";
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const API_URL = "https://sheets.googleapis.com/v4/spreadsheets";
 
-export class SheetsError extends Error {
+export class SheetsError extends DataSourceError {
   constructor(message: string) {
     super(message);
     this.name = "SheetsError";
@@ -89,7 +90,7 @@ export type Cell = string | number;
 
 /** Bir sekmenin tüm satırlarını, ekranda göründüğü haliyle okur. */
 export async function readSheet(tab: string): Promise<string[][]> {
-  const range = encodeURIComponent(`${tab}!A1:Z`);
+  const range = encodeURIComponent(`${tab}!A1:AZ`);
   const data = await call<{ values?: Cell[][] }>(`/values/${range}?valueRenderOption=FORMATTED_VALUE`);
   return (data.values ?? []).map((row) => row.map((v) => String(v ?? "")));
 }
@@ -147,4 +148,12 @@ export function headerIndex(headerRow: string[], required: readonly string[], ta
     throw new SheetsError(`“${tab}” sekmesinin ilk satırında şu başlıklar eksik: ${missing.join(", ")}`);
   }
   return new Map(required.map((h) => [h, map.get(norm(h))!]));
+}
+
+/** İsteğe bağlı başlıkların (varsa) sütun konumları. */
+export function optionalIndex(headerRow: string[], optional: readonly string[]): Map<string, number> {
+  const norm = (h: string) => h.trim().toLocaleLowerCase("tr");
+  const map = new Map<string, number>();
+  headerRow.forEach((h, i) => map.set(norm(h), i));
+  return new Map(optional.filter((h) => map.has(norm(h))).map((h) => [h, map.get(norm(h))!]));
 }

@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 /**
  * Basit hız sınırlayıcı (kayan pencere). Aynı kişiden kısa sürede gelen çok sayıda isteği reddeder;
- * böylece art arda tıklamalar veya otomatik denemeler sunucuyu ve Google Sheets kotasını yormaz.
+ * böylece art arda tıklamalar veya otomatik denemeler sunucuyu ve veritabanını yormaz.
  *
  * Not: Sayaçlar sunucu belleğinde tutulur. Vercel'de her sunucu örneği kendi sayacını tutar; bu yüzden
  * sınır yaklaşık değerdir ama kötüye kullanımı büyük ölçüde engeller.
@@ -11,7 +11,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const hits = new Map<string, number[]>();
 
-export interface Limit {
+interface Limit {
   name: string;
   max: number;
   windowMs: number;
@@ -24,7 +24,7 @@ export const LIMITS = {
   upload: { name: "gorsel", max: 40, windowMs: 60_000 }, // dakikada 40 fotoğraf
 } satisfies Record<string, Limit>;
 
-export function clientIp(request: NextRequest): string {
+function clientIp(request: NextRequest): string {
   return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "yerel";
 }
 

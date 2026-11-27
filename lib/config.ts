@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 
 /**
  * Ortam değişkenleri tek yerden okunur.
- *  - Araçlar ve talepler Google Sheets'te, fotoğraflar Cloudinary'de tutulur.
+ *  - Araçlar ve talepler MongoDB'de (MONGODB_URI yoksa Google Sheets'te), fotoğraflar Cloudinary'de tutulur.
  *  - Ayarlar eksikse site açık bir Türkçe hata mesajı gösterir.
  */
 
@@ -11,13 +11,13 @@ import { createHash } from "node:crypto";
  * Ortam değişkenini okur: baştaki/sondaki boşlukları ve yanlışlıkla eklenmiş tırnakları temizler
  * (ör. Vercel'e .env dosyasındaki gibi "..." ile yapıştırılmış değerler).
  */
-export function env(name: string): string | undefined {
+function env(name: string): string | undefined {
   let v = process.env[name]?.trim();
   if (v && v.length >= 2 && (v[0] === '"' || v[0] === "'") && v.at(-1) === v[0]) v = v.slice(1, -1).trim();
   return v || undefined;
 }
 
-export const SHEETS_VARS = ["GOOGLE_SHEET_ID", "GOOGLE_CLIENT_EMAIL", "GOOGLE_PRIVATE_KEY"] as const;
+const SHEETS_VARS = ["GOOGLE_SHEET_ID", "GOOGLE_CLIENT_EMAIL", "GOOGLE_PRIVATE_KEY"] as const;
 
 export function sheetsConfig() {
   // Tam Sheets adresi yapıştırılmışsa yalnızca /d/ ile /edit arasındaki kod alınır.
@@ -32,6 +32,16 @@ export function sheetsConfig() {
 /** Eksik Google Sheets değişkenlerinin adları (değerleri değil). */
 export function missingSheetsVars(): string[] {
   return SHEETS_VARS.filter((name) => !env(name));
+}
+
+/**
+ * MongoDB ayarları. MONGODB_URI tanımlıysa araçlar ve talepler MongoDB'de tutulur,
+ * tanımlı değilse Google Sheets kullanılmaya devam eder.
+ */
+export function mongoConfig() {
+  const uri = env("MONGODB_URI")?.replace(/^MONGODB_URI=/, "");
+  if (!uri) return null;
+  return { uri, dbName: env("MONGODB_DB") || "ekin-otomotiv" };
 }
 
 export function cloudinaryConfig() {

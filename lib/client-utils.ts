@@ -8,7 +8,7 @@ export function randomKey(): string {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-export interface ApiResult<T = Record<string, unknown>> {
+interface ApiResult<T = Record<string, unknown>> {
   ok: boolean;
   status: number;
   data: (T & { message?: string; fieldErrors?: Record<string, string> }) | null;

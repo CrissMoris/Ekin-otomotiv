@@ -1,18 +1,33 @@
 // Uygulama genelinde kullanılan veri tipleri.
+import type { BodyType, Drivetrain, HeavyDamageOption, Inspection, TradeOption } from "./vehicle-specs";
 
 export type FuelType = "benzin" | "dizel" | "lpg" | "benzin-lpg" | "hibrit" | "elektrik";
 export type Transmission = "manuel" | "otomatik" | "yari-otomatik";
 export type VehicleStatus = "yayinda" | "taslak";
 export type InquiryType = "satin-alma" | "takas" | "arac-satis" | "bilgi";
 
-/** Bir fotoğraf: `id` Sheets'te saklanan değerdir (Cloudinary kimliği ya da https adresi). */
+/** Bir fotoğraf: `id` veritabanında saklanan değerdir (Cloudinary kimliği ya da https adresi). */
 export interface Photo {
   id: string;
   url: string; // büyük görsel
   thumb: string; // kart / küçük görsel
 }
 
-export interface Vehicle {
+/** İsteğe bağlı ek bilgiler (boş bırakılabilir). */
+export interface VehicleExtras {
+  bodyType: BodyType | "";
+  color: string;
+  engineCc: number | null; // motor hacmi (cc)
+  enginePower: number | null; // motor gücü (hp)
+  drivetrain: Drivetrain | "";
+  trade: TradeOption | "";
+  heavyDamage: HeavyDamageOption | "";
+  tramer: number | null; // TL; 0 = kayıt yok
+  inspection: Inspection; // boya / değişen
+  features: string[]; // donanım özellikleri (anahtarlar)
+}
+
+export interface Vehicle extends VehicleExtras {
   id: string; // İlan No — değişmez
   status: VehicleStatus;
   make: string;
@@ -30,7 +45,7 @@ export interface Vehicle {
 }
 
 /** Yönetim panelinden gelen araç verisi. */
-export interface VehicleInput {
+export interface VehicleInput extends VehicleExtras {
   status: VehicleStatus;
   make: string;
   model: string;
@@ -54,6 +69,7 @@ export interface Inquiry {
   phone: string;
   email: string | null;
   message: string | null;
+  formLang?: "ar" | "en"; // talep sitenin Arapça / İngilizce sürümünden gönderildiyse
 }
 
 export interface VehicleFilters {

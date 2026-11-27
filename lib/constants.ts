@@ -1,7 +1,8 @@
 import type { FuelType, InquiryType, Transmission, VehicleStatus } from "./types";
 
-export const SITE_NAME = "Ekin Otomotiv";
 export const SAHIBINDEN_URL = "https://ekinotomotiv77.sahibinden.com/";
+export const INSTAGRAM_URL = "https://www.instagram.com/ekinotomotiv_/";
+export const INSTAGRAM_HANDLE = "@ekinotomotiv_";
 
 /** İletişim bilgileri. E-posta boş bırakılırsa sitede gösterilmez. */
 export const CONTACT = {

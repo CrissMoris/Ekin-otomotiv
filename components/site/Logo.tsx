@@ -1,16 +1,26 @@
 "use client";
 /* eslint-disable @next/next/no-img-element -- küçük, sabit logo dosyası */
 import Link from "next/link";
+import { lp, t, type Lang } from "@/lib/i18n";
 
 /** Logo her zaman ana sayfaya götürür; zaten ana sayfadaysanız sayfanın başına kaydırır. */
-export function Logo({ variant = "color", className = "logo" }: { variant?: "color" | "white"; className?: string }) {
+export function Logo({
+  variant = "color",
+  className = "logo",
+  lang = "tr",
+}: {
+  variant?: "color" | "white";
+  className?: string;
+  lang?: Lang;
+}) {
+  const home = lp(lang, "/");
   return (
     <Link
-      href="/"
+      href={home}
       className={className}
-      aria-label="Ekin Otomotiv ana sayfa"
+      aria-label={t(lang).header.logoAria}
       onClick={(e) => {
-        if (window.location.pathname === "/") {
+        if (window.location.pathname === home) {
           e.preventDefault();
           window.scrollTo({ top: 0, behavior: "smooth" });
         }

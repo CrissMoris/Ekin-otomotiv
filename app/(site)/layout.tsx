@@ -1,12 +1,5 @@
-import { SiteFooter } from "@/components/site/SiteFooter";
-import { SiteHeader } from "@/components/site/SiteHeader";
+import { SiteShell } from "@/components/site/SiteShell";
 
-export default function SiteLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return (
-    <>
-      <SiteHeader />
-      <main>{children}</main>
-      <SiteFooter />
-    </>
-  );
+export default function Layout({ children }: Readonly<{ children: React.ReactNode }>) {
+  return <SiteShell lang="tr">{children}</SiteShell>;
 }
