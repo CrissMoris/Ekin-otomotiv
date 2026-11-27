@@ -2,8 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { AdminGuard, AdminLoading } from "@/components/admin/AdminGuard";
 import { INQUIRY_TYPE_LABELS } from "@/lib/constants";
-import { sheetsConfig } from "@/lib/config";
-import { dataBackend, listInquiries } from "@/lib/store";
+import { listInquiries } from "@/lib/store";
 
 async function InquiryList() {
   const inquiries = await listInquiries();
@@ -12,12 +11,6 @@ async function InquiryList() {
       <div className="admin-toolbar">
         <h1>Talepler</h1>
       </div>
-      {sheetsConfig() && dataBackend().kind === "sheets" && (
-        <p className="alert alert-info">
-          Talepler Google Sheets&apos;teki “Talepler” sekmesine de kaydedilir. Takip için oradaki “Durum” sütununu
-          kullanabilirsiniz.
-        </p>
-      )}
       {inquiries.length === 0 ? (
         <div className="empty-state">Henüz talep yok. Sitedeki bir araç sayfasından deneme talebi gönderebilirsiniz.</div>
       ) : (

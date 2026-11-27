@@ -9,7 +9,6 @@ Bu depo, Ekin Otomotiv projesine ait dosyaları içerir. Proje geliştirildikçe
 İkinci el araç alım, satım ve takas web sitesi ile yönetim paneli (Next.js + TypeScript).
 
 - **Veriler** (araçlar ve müşteri talepleri) ücretsiz **MongoDB Atlas** veritabanında tutulur (`MONGODB_URI`).
-  `MONGODB_URI` tanımlı değilse site eskisi gibi **Google Sheets** ile çalışır.
 - **Fotoğraflar** ücretsiz **Cloudinary** hesabında saklanır; veritabanına yalnızca fotoğrafın kimliği yazılır.
 - Ayarlar eksik ya da hatalıysa yönetim paneli anlaşılır bir Türkçe hata mesajı gösterir.
 
@@ -65,13 +64,6 @@ Zorunlu: `ADMIN_PASSWORD` (yönetici PIN'i), `MONGODB_URI`, `MONGODB_DB` ve Clou
 
 Ayar eksik ya da hatalıysa yönetim paneli sorunu Türkçe olarak gösterir (değişken adlarıyla; değerleri asla).
 
-### Google Sheets (eski veri kaynağı)
-
-Site önceden Google Sheets ile çalışıyordu. `MONGODB_URI` tanımlı değilse hâlâ Sheets'i kullanır. `GOOGLE_SHEET_ID`,
-`GOOGLE_CLIENT_EMAIL` ve `GOOGLE_PRIVATE_KEY` tanımlıyken yönetim panelinde **Verileri aktar** düğmesi görünür:
-Sheets'teki kayıtları MongoDB'ye kopyalar, Sheets'i değiştirmez ve tekrar basıldığında kayıtları çoğaltmaz.
-Aktarım tamamlandıktan sonra bu üç değişken kaldırılabilir; Sheets dosyası yedek olarak kalır.
-
 ## Dil sürümleri
 
 Site Türkçe (`/`), İngilizce (`/en`) ve Arapça (`/ar`) olarak yayınlanır; dil üst şeritteki menüden seçilir.
@@ -83,7 +75,7 @@ Araç açıklamaları girildiği dilde (Türkçe) gösterilir. İngilizce/Arapç
 - 15 dakikada 5 hatalı PIN denemesinden sonra giriş geçici olarak kilitlenir.
 - Hız sınırları: talep formu 10 dakikada 5 talep; yönetim işlemleri dakikada 60; fotoğraf yükleme dakikada 40.
 - Güvenlik başlıkları (CSP, X-Frame-Options, HSTS vb.) `next.config.ts` içinde tanımlıdır.
-- Tarayıcıya yalnızca küçültülmüş (minify) kod gider; kaynak kod haritası gönderilmez. MongoDB, Google ve Cloudinary
+- Tarayıcıya yalnızca küçültülmüş (minify) kod gider; kaynak kod haritası gönderilmez. MongoDB ve Cloudinary
   anahtarları ile sunucu kodu hiçbir zaman tarayıcıya ulaşmaz.
 - MongoDB kullanıcısına yalnızca sitenin veritabanında `readWrite` yetkisi verilir; yönetici (Atlas admin) yetkisi verilmez.
 
@@ -94,11 +86,9 @@ app/(site)/        Herkese açık sayfalar
 app/admin/         Yönetim paneli
 app/api/           Sunucu uçları (talep formu, yönetici işlemleri, fotoğraf imzası)
 components/        Arayüz bileşenleri
-lib/store.ts       Tüm veri işlemleri (MONGODB_URI varsa MongoDB, yoksa Google Sheets)
-lib/backends/      Saklama katmanları: mongo.ts ve sheets.ts (aynı arayüz)
+lib/store.ts       Tüm veri işlemleri (sayfalar ve API uçları yalnızca bunu kullanır)
+lib/repository.ts  MongoDB okuma/yazma (araçlar, talepler)
 lib/mongo.ts       MongoDB bağlantısı ve Türkçe hata mesajları
-lib/migrate.ts     Google Sheets → MongoDB aktarımı
-lib/sheets.ts      Google Sheets bağlantısı
 lib/cloudinary.ts  Cloudinary imza / silme / görsel adresi
 lib/rate-limit.ts  Hız sınırlayıcı
 public/marka/      Logo dosyaları

@@ -2,15 +2,12 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { AdminGuard, AdminLoading } from "@/components/admin/AdminGuard";
-import { MigrationPanel } from "@/components/admin/MigrationPanel";
 import { VehicleActions } from "@/components/admin/VehicleActions";
-import { sheetsConfig } from "@/lib/config";
 import { FUEL_LABELS, STATUS_LABELS, TRANSMISSION_LABELS } from "@/lib/constants";
 import type { SearchParams } from "@/lib/filters";
 import { formatKm, formatPrice, formatStamp } from "@/lib/format";
 import { DataSourceError } from "@/lib/data-error";
-import { canMigrate } from "@/lib/migrate";
-import { dataBackend, getAllVehicles, listInquiries } from "@/lib/store";
+import { getAllVehicles, listInquiries } from "@/lib/store";
 
 const FLASH: Record<string, string> = {
   eklendi: "Araç eklendi.",
@@ -31,19 +28,12 @@ async function Dashboard({ searchParams }: { searchParams: Promise<SearchParams>
   const [{ vehicles, issues }, inquiries] = data;
   const published = vehicles.filter((v) => v.status === "yayinda").length;
   const flash = FLASH[String(sp.durum ?? "")];
-  const onSheets = dataBackend().kind === "sheets";
-  const sheetId = onSheets ? sheetsConfig()?.sheetId : undefined;
 
   return (
     <>
       <div className="admin-toolbar">
         <h1>Araçlar</h1>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {sheetId && (
-            <a className="btn btn-outline" href={`https://docs.google.com/spreadsheets/d/${sheetId}`} target="_blank" rel="noopener noreferrer">
-              Google Sheets&apos;i aç ↗
-            </a>
-          )}
           <Link href="/admin/araclar/yeni" className="btn btn-red">+ Yeni Araç Ekle</Link>
         </div>
       </div>
@@ -56,14 +46,12 @@ async function Dashboard({ searchParams }: { searchParams: Promise<SearchParams>
 
       {issues.length > 0 && (
         <div className="alert alert-error" style={{ marginBottom: 16 }}>
-          <p><strong>{onSheets ? "Sheets'teki bazı satırlar" : "Bazı araç kayıtları"} okunamadı ve sitede gösterilmiyor:</strong></p>
+          <p><strong>Bazı araç kayıtları okunamadı ve sitede gösterilmiyor:</strong></p>
           <ul style={{ margin: 0, paddingLeft: 18 }}>
             {issues.map((i) => <li key={i}>{i}</li>)}
           </ul>
         </div>
       )}
-
-      {canMigrate() && <MigrationPanel />}
 
       <div className="stat-row">
         <div className="stat-card"><strong>{vehicles.length}</strong><span>Toplam araç</span></div>
@@ -125,7 +113,7 @@ async function Dashboard({ searchParams }: { searchParams: Promise<SearchParams>
 function ConnectionProblem({ message }: { message: string }) {
   return (
     <div className="panel" style={{ maxWidth: 720 }}>
-      <h1 style={{ fontSize: "1.3rem" }}>{dataBackend().kind === "mongo" ? "MongoDB" : "Google Sheets"} bağlantısı kurulamadı</h1>
+      <h1 style={{ fontSize: "1.3rem" }}>Veritabanı (MongoDB) bağlantısı kurulamadı</h1>
       <div className="alert alert-error" role="alert" style={{ margin: "12px 0" }}>{message}</div>
       <p className="muted">
         Vercel&apos;de bir ayarı değiştirdikten sonra Deployments sayfasından son yayını seçip <strong>Redeploy</strong>{" "}

@@ -2,18 +2,14 @@ import "server-only";
 import { randomInt, randomUUID } from "node:crypto";
 import { cacheLife, cacheTag, revalidateTag } from "next/cache";
 import { connection } from "next/server";
-import { mongoBackend } from "./backends/mongo";
-import { sheetsBackend } from "./backends/sheets";
-import type { DataBackend } from "./backends/types";
-import { mongoConfig } from "./config";
 import { nowDisplay, nowStamp } from "./format";
 import { isAllowedPhotoId, removePhotos, toPhoto } from "./photos";
 import type { Inquiry, Photo, Vehicle, VehicleFilters, VehicleInput, VehicleStatus } from "./types";
+import * as db from "./repository";
 import type { InquiryFormData } from "./validation";
 
 /**
- * Tüm veri işlemleri burada. Araçlar ve talepler MongoDB'de (MONGODB_URI tanımlı değilse Google Sheets'te),
- * fotoğraflar Cloudinary'de tutulur. Sayfalar ve API uçları yalnızca bu dosyadaki fonksiyonları kullanır.
+ * Tüm veri işlemleri burada. Araçlar ve talepler MongoDB'de, fotoğraflar Cloudinary'de tutulur. Sayfalar ve API uçları yalnızca bu dosyadaki fonksiyonları kullanır.
  */
 
 /** Kullanıcıya gösterilebilir hata (Türkçe mesajlı). */
@@ -24,32 +20,21 @@ export class StoreError extends Error {
   }
 }
 
-/** Kullanılan saklama katmanı: MONGODB_URI varsa MongoDB, yoksa Google Sheets. */
-export function dataBackend(): DataBackend {
-  return mongoConfig() ? mongoBackend : sheetsBackend;
-}
-
 const norm = (s: string) => s.trim().toLocaleLowerCase("tr");
 const notFound = () => new StoreError("Araç bulunamadı. Silinmiş olabilir.", 404);
-const invalidRecord = () =>
-  new StoreError(
-    dataBackend().kind === "sheets"
-      ? "Bu aracın Sheets satırında hatalı bilgi var; önce Sheets'te düzeltin."
-      : "Bu aracın kaydında hatalı bilgi var; yönetim panelindeki uyarıya bakın.",
-    409,
-  );
+const invalidRecord = () => new StoreError("Bu aracın kaydında hatalı bilgi var; yönetim panelindeki uyarıya bakın.", 409);
 const conflict = () => new StoreError("Bu araç siz düzenlerken başka bir yerde güncellendi. Sayfayı yenileyip tekrar deneyin.", 409);
 
 // ---------------------------------------------------------------------------
 // Okuma
 // ---------------------------------------------------------------------------
 
-/** Herkese açık sayfalar için önbellekli liste (en fazla 1 dakikada bir veri kaynağından okunur). */
+/** Herkese açık sayfalar için önbellekli liste (en fazla 1 dakikada bir veritabanından okunur). */
 async function cachedVehicles(): Promise<Vehicle[]> {
   "use cache";
   cacheTag("araclar");
   cacheLife({ stale: 30, revalidate: 60, expire: 600 });
-  return (await dataBackend().listVehicles()).vehicles;
+  return (await db.listVehicles()).vehicles;
 }
 
 function refreshPublicCache() {
@@ -87,7 +72,7 @@ export async function getMakes(): Promise<string[]> {
 /** Yönetim paneli: her zaman güncel (önbelleksiz) veri. */
 export async function getAllVehicles(): Promise<{ vehicles: Vehicle[]; issues: string[] }> {
   await connection();
-  const result = await dataBackend().listVehicles();
+  const result = await db.listVehicles();
   return {
     vehicles: result.vehicles.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
     issues: result.issues,
@@ -127,14 +112,14 @@ function fromInput(input: VehicleInput) {
 export async function createVehicle(input: VehicleInput): Promise<Vehicle> {
   const now = nowStamp();
   const fields = fromInput(input);
-  const vehicle = await dataBackend().insertVehicle((taken) => ({ ...fields, id: newVehicleId(taken), createdAt: now, updatedAt: now }));
+  const vehicle = await db.insertVehicle((taken) => ({ ...fields, id: newVehicleId(taken), createdAt: now, updatedAt: now }));
   refreshPublicCache();
   return vehicle;
 }
 
 export async function updateVehicle(id: string, input: VehicleInput, expectedUpdatedAt?: string): Promise<Vehicle> {
   const fields = fromInput(input);
-  const result = await dataBackend().updateVehicle(id, (previous) => {
+  const result = await db.updateVehicle(id, (previous) => {
     if (expectedUpdatedAt && previous.updatedAt !== expectedUpdatedAt) throw conflict();
     return { ...previous, ...fields, updatedAt: nowStamp() };
   });
@@ -157,9 +142,8 @@ export async function setVehicleStatus(id: string, status: VehicleStatus): Promi
 }
 
 export async function deleteVehicle(id: string): Promise<void> {
-  const result = await dataBackend().deleteVehicle(id);
+  const result = await db.deleteVehicle(id);
   if (result === "missing") throw notFound();
-  if (result === "invalid") throw invalidRecord();
   refreshPublicCache();
   await removePhotos(result); // önce kayıt silinir, sitede kırık ilan kalmaz
 }
@@ -183,10 +167,10 @@ export async function addInquiry(data: InquiryFormData, submissionKey: string, l
     ...data,
     formLang: lang === "tr" ? undefined : lang,
   };
-  return dataBackend().addInquiry({ inquiry, submissionKey, status: "Yeni" });
+  return db.addInquiry({ inquiry, submissionKey, status: "Yeni" });
 }
 
 export async function listInquiries(): Promise<Inquiry[]> {
   await connection();
-  return dataBackend().listInquiries();
+  return db.listInquiries();
 }

@@ -2630,15 +2630,3 @@ dialog.lightbox::backdrop {
   flex: none;
   width: 16px;
 }
-
-/* ---------- Yönetim: Sheets → MongoDB aktarımı ---------- */
-.migration-panel {
-  margin-bottom: 16px;
-}
-.migration-panel h2 {
-  font-size: 1.05rem;
-  margin: 0 0 6px;
-}
-.migration-panel .alert {
-  margin: 10px 0;
-}

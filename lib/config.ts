@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 
 /**
  * Ortam değişkenleri tek yerden okunur.
- *  - Araçlar ve talepler MongoDB'de (MONGODB_URI yoksa Google Sheets'te), fotoğraflar Cloudinary'de tutulur.
+ *  - Araçlar ve talepler MongoDB'de, fotoğraflar Cloudinary'de tutulur.
  *  - Ayarlar eksikse site açık bir Türkçe hata mesajı gösterir.
  */
 
@@ -17,27 +17,7 @@ function env(name: string): string | undefined {
   return v || undefined;
 }
 
-const SHEETS_VARS = ["GOOGLE_SHEET_ID", "GOOGLE_CLIENT_EMAIL", "GOOGLE_PRIVATE_KEY"] as const;
-
-export function sheetsConfig() {
-  // Tam Sheets adresi yapıştırılmışsa yalnızca /d/ ile /edit arasındaki kod alınır.
-  const rawId = env("GOOGLE_SHEET_ID");
-  const sheetId = rawId?.match(/\/d\/([a-zA-Z0-9_-]+)/)?.[1] ?? rawId;
-  const clientEmail = env("GOOGLE_CLIENT_EMAIL");
-  const privateKey = env("GOOGLE_PRIVATE_KEY")?.replace(/\\n/g, "\n").replace(/\r/g, "").trim();
-  if (!sheetId || !clientEmail || !privateKey) return null;
-  return { sheetId, clientEmail, privateKey };
-}
-
-/** Eksik Google Sheets değişkenlerinin adları (değerleri değil). */
-export function missingSheetsVars(): string[] {
-  return SHEETS_VARS.filter((name) => !env(name));
-}
-
-/**
- * MongoDB ayarları. MONGODB_URI tanımlıysa araçlar ve talepler MongoDB'de tutulur,
- * tanımlı değilse Google Sheets kullanılmaya devam eder.
- */
+/** MongoDB ayarları (araçlar ve talepler). */
 export function mongoConfig() {
   const uri = env("MONGODB_URI")?.replace(/^MONGODB_URI=/, "");
   if (!uri) return null;
@@ -67,7 +47,7 @@ export function getAdminPin(): string | null {
 }
 
 /**
- * Oturum çerezini imzalayan anahtar. SESSION_SECRET verilmezse PIN ile Google özel anahtarından türetilir.
+ * Oturum çerezini imzalayan anahtar. SESSION_SECRET verilmezse PIN ile MongoDB bağlantı adresinden türetilir.
  * Canlı ortamda SESSION_SECRET tanımlanması önerilir.
  */
 export function getSessionSecret(): string | null {
@@ -75,6 +55,6 @@ export function getSessionSecret(): string | null {
   if (configured && configured.length >= 32) return configured;
   const pin = getAdminPin();
   if (!pin) return null;
-  const extra = sheetsConfig()?.privateKey ?? "ekin-otomotiv";
+  const extra = mongoConfig()?.uri ?? "ekin-otomotiv";
   return createHash("sha256").update(`ekin-oturum:${pin}:${extra}`).digest("hex");
 }
